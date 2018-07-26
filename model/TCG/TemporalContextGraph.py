@@ -367,7 +367,7 @@ class TemporalContextGraph:
         for _, node in self.nodes.iteritems():
             print(node)
 
-    def output_graph(self, path, open_file):
+    def output_graph(self, path, open_file=False):
         """
         Generates png and nx representations of the model and saves them to disk
         :param path: string indicating the path to store the network in
