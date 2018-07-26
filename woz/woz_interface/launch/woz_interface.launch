@@ -1,0 +1,71 @@
+<launch>
+	<param name="use_sim_time" value="false" />
+
+    <arg name="bag_path" default="$(env HOME)/bag" />
+    <arg name="front_kinect" default="009393464147" />
+    <arg name="table_kinect" default="003745264147" />
+    <arg name="back_kinect" default="003063263847" />
+
+	<remap from="top_camera" to="nao_robot/camera/top/camera/image_raw"/>
+	<remap from="bottom_camera" to="nao_robot/camera/bottom/camera/image_raw"/>
+
+	<node name="woz_interface" pkg="woz_interface" type="woz_interface" />
+	<node name="woz_actions_point" pkg="woz_actions" type="woz_actions_point" />
+
+    <!--node name="audio_record" pkg="node_controllers" type="audio_record">
+        <param name="bag_path" value="$(env HOME)/bag"/>
+    </node-->
+
+    <!--node name="export" pkg="rename" type="export" /-->
+    <!--node name="gaze_tracker" pkg="attention_tracker" type="estimate" >
+        <param name="face_model" value="$(find attention_tracker)/share/shape_predictor_68_face_landmarks.dat" />
+        <remap from="/image" to="/nao_robot/camera/top/camera/image_raw"/>
+    </node>
+
+    <node name="gaze_cont" pkg="asdpomdp" type="gaze_contingency" />
+    <node name="audio_cont" pkg="asdpomdp" type="audio_contingency" /-->
+
+    <!-- start kinects -->
+    <include file="$(find kinect2_bridge)/launch/woz_kinect.launch">
+        <arg name="sensor" value="$(arg table_kinect)" />
+        <arg name="base_name" value="kinect_$(arg table_kinect)" />
+        <arg name="max_depth" value="2.5" />
+    </include>
+    <!--include file="$(find kinect2_bridge)/launch/woz_kinect.launch">
+        <arg name="sensor" value="$(arg front_kinect)" />
+        <arg name="base_name" value="kinect_$(arg front_kinect)" />
+        <arg name="max_depth" value="2.5" />
+    </include-->
+    <!-- kinect in remote computer STARTED MANUALLY -->
+    <!--include file="$(find kinect2_bridge)/launch/woz_kinect.launch" machine="83">
+        <arg name="sensor" value="$(arg back_kinect)" />
+        <arg name="base_name" value="kinect_$(arg back_kinect)" />
+    </include-->
+
+    <!-- start microphone  DONE MANUALLY-->
+    <!--include file="$(find audio_capture)/launch/capture.launch">
+        <arg name="device" value="hw:2" />
+    </include-->
+
+    <node pkg="node_controllers" name="data_logger" type="data_logger" output="screen">
+        <param name="rosbag_record_args"
+               value="--output-prefix=nao_session
+					/action_started
+					/nao_robot/microphone/naoqi_microphone/audio_raw
+					/nao_robot/camera/top/camera/image_raw
+					/nao_robot/camera/top/camera/camera_info
+					/nao_robot/camera/bottom/camera/image_raw
+					/nao_robot/camera/bottom/camera/camera_info
+					/kinect_$(arg table_kinect)/hd/camera_info
+					/kinect_$(arg table_kinect)/hd/image_depth_rect/compressed
+					/kinect_$(arg front_kinect)/hd/camera_info
+					/kinect_$(arg front_kinect)/hd/image_depth_rect/compressed
+					/audio/audio
+				"/>
+        <param name="bag_path" value="$(arg bag_path)"/>
+    </node>
+
+    <!--            /kinect_$(arg back_kinect)/hd/camera_info
+					/kinect_$(arg back_kinect)/hd/image_depth_rect/compressed-->
+
+</launch>

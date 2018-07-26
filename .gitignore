@@ -1,0 +1,9 @@
+*.pyc
+*.npy
+*.mp3
+*.bag
+*.nx
+*.json
+*.png
+*.dot
+.idea/
