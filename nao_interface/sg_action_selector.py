@@ -29,10 +29,10 @@ def process_input(msg):
     tcg = TemporalContextGraph(transition_events=['response'])
     tcg.learn_model_from_files(os.path.join(sg_path, 'temp_info/'),
                                validation_file_path=os.path.join(sg_path, val_set_file))
-
+    tcg.nodes['reward'].duration = 1.2
     # Load CNN model
-    a_cnn_ckpt = "../model/sg_perception/aud_classifier/itbn_aud_final/model.ckpt"
-    v_cnn_ckpt = "../model/sg_perception/opt_classifier/itbn_opt_final/model.ckpt"
+    a_cnn_ckpt = "../model/sg_perception/aud_classifier/aud_cnn_final/model.ckpt"
+    v_cnn_ckpt = "../model/sg_perception/opt_classifier/opt_cnn_final/model.ckpt"
     aud_cnn = aud_classifier.ClassifierModel(learning_rate=ALPHA, filename=a_cnn_ckpt)
     opt_cnn = opt_classifier.ClassifierModel(learning_rate=ALPHA, filename=v_cnn_ckpt)
 
@@ -57,6 +57,7 @@ def process_input(msg):
 
     state = 'command'
     window_counter = 0
+    response_counter = 0
     packager.reset(hard_reset=True)
     tcg.initialize_policy_selector(state, 'abort')
     pub.publish(sg_states[state])
@@ -79,10 +80,16 @@ def process_input(msg):
 
             if obs_aud == 1:
                 obs = 0
+                response_counter = 0
             elif max(obs_aud, obs_opt) == 2:
-                obs = 2
+                if response_counter == 1:
+                    obs = 2
+                    response_counter = 0
+                else:
+                    response_counter = 1
             else:
                 obs = 0
+                response_counter = 0
             tcg.process_observation(CLASSES_A[obs], end_frame / 12.0)
             new_state = tcg.evaluate_timeout(end_frame / 12.0)
 

@@ -47,25 +47,24 @@
         <arg name="device" value="hw:2" />
     </include-->
 
-    <node pkg="node_controllers" name="data_logger" type="data_logger" output="screen">
+    <node pkg="interface_ros_functions" name="data_logger" type="data_logger" output="screen">
         <param name="rosbag_record_args"
                value="--output-prefix=nao_session
 					/action_started
-					/nao_robot/microphone/naoqi_microphone/audio_raw
 					/nao_robot/camera/top/camera/image_raw
 					/nao_robot/camera/top/camera/camera_info
-					/nao_robot/camera/bottom/camera/image_raw
-					/nao_robot/camera/bottom/camera/camera_info
-					/kinect_$(arg table_kinect)/hd/camera_info
-					/kinect_$(arg table_kinect)/hd/image_depth_rect/compressed
-					/kinect_$(arg front_kinect)/hd/camera_info
-					/kinect_$(arg front_kinect)/hd/image_depth_rect/compressed
 					/audio/audio
 				"/>
         <param name="bag_path" value="$(arg bag_path)"/>
     </node>
 
-    <!--            /kinect_$(arg back_kinect)/hd/camera_info
-					/kinect_$(arg back_kinect)/hd/image_depth_rect/compressed-->
+    <!--
+    /nao_robot/microphone/naoqi_microphone/audio_raw
+    /nao_robot/camera/bottom/camera/image_raw
+    /nao_robot/camera/bottom/camera/camera_info
+    /kinect_$(arg table_kinect)/hd/camera_info
+    /kinect_$(arg table_kinect)/hd/image_depth_rect/compressed
+    /kinect_$(arg back_kinect)/hd/camera_info
+    /kinect_$(arg back_kinect)/hd/image_depth_rect/compressed-->
 
 </launch>

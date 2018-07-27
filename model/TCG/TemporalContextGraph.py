@@ -144,8 +144,6 @@ class TemporalContextGraph:
         sequences, itr_sequences = self.process_temporal_files(
             temporal_files_dir, os.path.join(temporal_files_dir, validation_file_path))
         self.learn_structure(sequences)
-        print(sequences)
-        print(itr_sequences)
         gram_orders = TemporalContextGraph.process_itr_sequences(itr_sequences)
         if len(ngrams) == 0:
             for event, order in gram_orders.iteritems():
