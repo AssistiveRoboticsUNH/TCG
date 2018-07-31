@@ -14,7 +14,7 @@ ALPHA = 1e-5
 WINDOW_SIZE = 15
 WINDOW_STRIDE = 5
 
-VALIDATION = False
+VALIDATION = True
 
 
 def sequence_from_file(file):

@@ -10,7 +10,7 @@ SEQUENCE_CHARS = ["^", "!", "_"]
 WINDOW_SIZE = 15
 WINDOW_STRIDE = 5
 
-VALIDATION = False
+VALIDATION = True
 
 
 def sequence_from_file(file):

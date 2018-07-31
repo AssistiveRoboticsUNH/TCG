@@ -143,6 +143,9 @@ class TemporalContextGraph:
         self.event_symbols = event_symbols
         sequences, itr_sequences = self.process_temporal_files(
             temporal_files_dir, os.path.join(temporal_files_dir, validation_file_path))
+        print(sequences)
+        print(itr_sequences)
+        print(self.itr_cache)
         self.learn_structure(sequences)
         gram_orders = TemporalContextGraph.process_itr_sequences(itr_sequences)
         if len(ngrams) == 0:
@@ -196,7 +199,7 @@ class TemporalContextGraph:
         itr_sequences = list()
         event_counts = dict()
         timeout_counts = dict()
-        self.transition_cache = dict()
+        self.transitions_cache = dict()
         self.itr_cache = dict()
         transition_counter = 0
         validation_set = TemporalContextGraph.load_validation_set(validation_set_file_path)
@@ -207,7 +210,6 @@ class TemporalContextGraph:
                 if f not in validation_set:
                     sorted_events = list()
                     itr_sequence = list()
-                    itr_sequence_delayed = list()
                     events = self.get_events_dict_from_file(os.path.join(directory, f))
                     for name, event in sorted(events.iteritems(), key=lambda (n, v): (v.start, n)):
                         sorted_events.append(event)
@@ -237,6 +239,10 @@ class TemporalContextGraph:
                                   p.symbol in self.transition_events):
                                 self.nodes[p.symbol].timeout += e.start - p.end
                                 timeout_counts[p.symbol] = timeout_counts.get(p.symbol, 0) + 1
+                        if i >= len(sorted_events) - 1:
+                            next_e = None
+                        else:
+                            next_e = events[sorted_events[i + 1].name].symbol
                         if i < len(sorted_events):
                             if e.symbol not in self.nodes:
                                 node = TCGNode(e.symbol, duration=(e.end - e.start))
@@ -251,26 +257,19 @@ class TemporalContextGraph:
                             elif i == len(sorted_events) - 1:
                                 node.is_terminal = True
                         itr = ia.IntervalAlgebra.obtain_itr(event, prev)
-                        if (tuple(itr_sequence), (prev.name, event.name)) not in self.transition_cache:
-                            self.transition_cache[(tuple(itr_sequence), (prev.name, event.name))] = transition_counter
+                        temporal_context = (tuple(itr_sequence), (prev.name, event.name))
+                        if temporal_context not in self.transitions_cache:
+                            self.transitions_cache[temporal_context] = transition_counter
                             self.itr_cache[transition_counter] = {itr}
                             itr = transition_counter
                             transition_counter += 1
                         else:
-                            id = self.transition_cache[(tuple(itr_sequence), (prev.name, event.name))]
-                            self.itr_cache[id].add(itr)
-                            itr = id
+                            transition = self.transitions_cache[temporal_context]
+                            self.itr_cache[transition].add(itr)
+                            itr = transition
                         itr_sequence.append((prev.name, itr, event.name))
-                        # if event.name in self.transition_events:
-                        #     event.start += TemporalContextGraph.PERCEPTION_DELAY
-                        #     event.end += TemporalContextGraph.PERCEPTION_DELAY
-                        #     itr_delayed = ia.IntervalAlgebra.obtain_itr(event, prev)
-                        #     itr_sequence_delayed.append((prev.name, itr_delayed, event.name))
-                        # else:
-                        #     itr_sequence_delayed.append((prev.name, itr, event.name))
                     sequences.append([e.symbol for e in sorted_events])
                     itr_sequences.append(itr_sequence)
-                    # itr_sequences.append(itr_sequence_delayed)
         for event, node in self.nodes.iteritems():
             node.duration = float(node.duration) / event_counts[event]
             if event in timeout_counts:
@@ -483,9 +482,10 @@ class TemporalContextGraph:
                 if token is None:
                     token = ia.AtomicEvent(None, -2, -1)
                 itr = ia.IntervalAlgebra.obtain_itr(next, token)
-                if (tuple(itr_sequence), (token.name, next.name)) in self.transition_cache:
-                    itr_group = self.transition_cache[tuple(itr_sequence), (token.name, next.name)]
-                    itr = (token.name, itr_group, next.name)
+                temporal_context = (tuple(itr_sequence), (token.name, next.name))
+                if temporal_context in self.transitions_cache:
+                    itr = self.transitions_cache[temporal_context]
+                    itr = (token.name, itr, next.name)
             itr_sequence.append(itr)
         if failure:
             print(itr_sequence)
