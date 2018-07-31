@@ -259,14 +259,24 @@ class TemporalContextGraph:
                         itr = ia.IntervalAlgebra.obtain_itr(event, prev)
                         temporal_context = (tuple(itr_sequence), (prev.name, event.name))
                         if temporal_context not in self.transitions_cache:
-                            self.transitions_cache[temporal_context] = transition_counter
-                            self.itr_cache[transition_counter] = {itr}
+                            self.transitions_cache[temporal_context] = [transition_counter]
+                            self.itr_cache[transition_counter] = TCGEdge({itr}, {next_e}, 1)
                             itr = transition_counter
                             transition_counter += 1
                         else:
-                            transition = self.transitions_cache[temporal_context]
-                            self.itr_cache[transition].add(itr)
-                            itr = transition
+                            transitions = self.transitions_cache[temporal_context]
+                            for transition in transitions:
+                                t = self.itr_cache[transition]
+                                if itr in t.start or next_e in t.end:
+                                    t.start.add(itr)
+                                    t.end.add(next_e)
+                                    t.event += 1
+                                    itr = transition
+                            if isinstance(itr, ia.IntervalTemporalRelation):
+                                self.transitions_cache[temporal_context].append(transition_counter)
+                                self.itr_cache[transition_counter] = TCGEdge({itr}, {next_e}, 1)
+                                itr = transition_counter
+                                transition_counter += 1
                         itr_sequence.append((prev.name, itr, event.name))
                     sequences.append([e.symbol for e in sorted_events])
                     itr_sequences.append(itr_sequence)
@@ -484,8 +494,18 @@ class TemporalContextGraph:
                 itr = ia.IntervalAlgebra.obtain_itr(next, token)
                 temporal_context = (tuple(itr_sequence), (token.name, next.name))
                 if temporal_context in self.transitions_cache:
-                    itr = self.transitions_cache[temporal_context]
-                    itr = (token.name, itr, next.name)
+                    transitions = self.transitions_cache[temporal_context]
+                    max_freq = TCGEdge('', '', -1)
+                    max_freq_trans = -1
+                    for transition in transitions:
+                        t = self.itr_cache[transition]
+                        if itr in t.start:
+                            itr = (token.name, transition, next.name)
+                        if t.event > max_freq.event:
+                            max_freq = t
+                            max_freq_trans = transition
+                    if isinstance(itr, ia.IntervalTemporalRelation):
+                        itr = (token.name, max_freq_trans, next.name)
             itr_sequence.append(itr)
         if failure:
             print(itr_sequence)
