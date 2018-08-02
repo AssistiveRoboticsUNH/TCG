@@ -143,9 +143,9 @@ class TemporalContextGraph:
         self.event_symbols = event_symbols
         sequences, itr_sequences = self.process_temporal_files(
             temporal_files_dir, os.path.join(temporal_files_dir, validation_file_path))
-        print(sequences)
-        print(itr_sequences)
-        print(self.itr_cache)
+        # print(sequences)
+        # print(itr_sequences)
+        # print(self.itr_cache)
         self.learn_structure(sequences)
         gram_orders = TemporalContextGraph.process_itr_sequences(itr_sequences)
         if len(ngrams) == 0:
@@ -207,7 +207,7 @@ class TemporalContextGraph:
             subdir.sort()
             files.sort()
             for f in files:
-                if f not in validation_set:
+                if f not in validation_set and 'fb' not in f:
                     sorted_events = list()
                     itr_sequence = list()
                     events = self.get_events_dict_from_file(os.path.join(directory, f))
@@ -553,7 +553,7 @@ def toy_test():
 if __name__ == '__main__':
     print('# TOY TEST: ######################')
     toy_test()
-    # print('\n\n\n# OND TEST: ######################')
-    # ond_test()
+    print('\n\n\n# OND TEST: ######################')
+    ond_test()
     # print('\n\n\n# SG TEST: ######################')
     # sg_test()

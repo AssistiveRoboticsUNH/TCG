@@ -419,7 +419,7 @@ class DQNPackager:
         # if self.__use_opt_obs:
         img_stack, opt_stack = self.formatImgBatch(
             self.__img_complete_stack[start_frame:end_frame], name)
-        #self.__imgStack = np.expand_dims(img_stack, axis=0)
+        self.__imgStack = np.expand_dims(img_stack, axis=0)
         self.__pntStack = np.reshape(np.expand_dims(opt_stack, axis=0), (1, -1, 4096))
         self.__specStack = np.expand_dims(self.formatAudBatch(
             self.__aud_complete_stack[start_frame:end_frame], name), axis=0)

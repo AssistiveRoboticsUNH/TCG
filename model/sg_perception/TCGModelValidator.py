@@ -15,7 +15,7 @@ ALPHA = 1e-5
 WINDOW_SIZE = 20
 WINDOW_STRIDE = 7
 
-VALIDATION = False
+VALIDATION = True
 
 
 def process_real_times(td):
@@ -90,8 +90,8 @@ if __name__ == '__main__':
                                validation_file_path=os.path.join(ond_path, val_set_file))
 
     # Load model
-    a_ckpt = 'aud_classifier/itbn_aud_final/model.ckpt'
-    o_ckpt = 'opt_classifier/itbn_opt_final/model.ckpt'
+    a_ckpt = 'aud_classifier/aud_cnn_final/model.ckpt'
+    o_ckpt = 'opt_classifier/opt_cnn_final/model.ckpt'
     aud_cnn = aud_classifier.ClassifierModel(learning_rate=ALPHA, filename=a_ckpt)
     opt_cnn = opt_classifier.ClassifierModel(learning_rate=ALPHA, filename=o_ckpt)
 
