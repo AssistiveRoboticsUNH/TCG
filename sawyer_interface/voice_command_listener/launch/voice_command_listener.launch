@@ -1,0 +1,10 @@
+<launch>
+  <arg name="dict" default="9401" />
+  <node name="recognizer" pkg="pocketsphinx" type="recognizer.py">
+    <param name="lm" value="$(find voice_command_listener)/speech/TAR$(arg dict)/$(arg dict).lm"/>
+    <param name="dict" value="$(find voice_command_listener)/speech/TAR$(arg dict)/$(arg dict).dic"/>
+  </node>
+
+  <node pkg="voice_command_listener" name="voice_command_listener" type="voice_command_listener"/>
+
+</launch>

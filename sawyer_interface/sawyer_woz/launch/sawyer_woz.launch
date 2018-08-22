@@ -1,0 +1,42 @@
+<launch>
+	<param name="use_sim_time" value="false" />
+
+    <arg name="bag_path" default="$(env HOME)/sawyer_bag" />
+    <arg name="front_kinect" default="009393464147" />
+    <arg name="table_kinect" default="003745264147" />
+    <arg name="back_kinect" default="003063263847" />
+
+	<node name="sawyer_woz_interface" pkg="sawyer_woz" type="sawyer_woz" />
+
+    <!-- start kinects >
+    <include file="$(find kinect2_bridge)/launch/woz_kinect.launch">
+        <arg name="sensor" value="$(arg table_kinect)" />
+        <arg name="base_name" value="kinect_$(arg table_kinect)" />
+        <arg name="max_depth" value="2.5" />
+    </include -->
+    <!--include file="$(find kinect2_bridge)/launch/woz_kinect.launch">
+        <arg name="sensor" value="$(arg front_kinect)" />
+        <arg name="base_name" value="kinect_$(arg front_kinect)" />
+        <arg name="max_depth" value="2.5" />
+    </include-->
+    <!-- kinect in remote computer STARTED MANUALLY -->
+    <!--include file="$(find kinect2_bridge)/launch/woz_kinect.launch" machine="83">
+        <arg name="sensor" value="$(arg back_kinect)" />
+        <arg name="base_name" value="kinect_$(arg back_kinect)" />
+    </include-->
+
+    <!-- start microphone  DONE MANUALLY-->
+    <!--include file="$(find audio_capture)/launch/capture.launch">
+        <arg name="device" value="hw:2" />
+    </include-->
+
+    <node pkg="interface_ros_functions" name="data_logger" type="data_logger" output="screen">
+        <param name="rosbag_record_args"
+               value="--output-prefix=sawyer
+					/sawyer_woz_action
+					/audio/audio
+					/sawyer_msgs
+				"/>
+        <param name="bag_path" value="$(arg bag_path)"/>
+    </node>
+</launch>
