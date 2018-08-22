@@ -87,27 +87,30 @@ void SawyerWoZInterface::on_stopRecording_clicked() {
 }
 
 void SawyerWoZInterface::on_pickItem_clicked() {
-    ui->itemLimit->display(ui->itemLimit->intValue() - 1);
-    std_msgs::Int8 msg;
-    msg.data = 0;
-    pub_sawyer_woz_msgs.publish(msg);
+    int op = ui->itemLimit->intValue();
+    if (op > 0) {
+        ui->itemLimit->display(op - 1);
+        std_msgs::Int8 msg;
+        msg.data = op;
+        pub_sawyer_woz_msgs.publish(msg);
+    }
 }
 
 void SawyerWoZInterface::on_placeDQA_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 1;
+    msg.data = 4;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
 void SawyerWoZInterface::on_placeSQA_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 2;
+    msg.data = 5;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
 void SawyerWoZInterface::on_placeBox_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 3;
+    msg.data = 6;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
@@ -129,7 +132,7 @@ void SawyerWoZInterface::controlCallback(const std_msgs::Int8& msg) {
 void SawyerWoZInterface::on_moveToStart_clicked() {
     ui->itemLimit->display(itemLimit);
     std_msgs::Int8 msg;
-    msg.data = -1;
+    msg.data = 0;
     pub_sawyer_woz_msgs.publish(msg);
 }
 

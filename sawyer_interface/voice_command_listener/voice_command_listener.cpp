@@ -20,13 +20,13 @@ void commandParser(const std_msgs::StringConstPtr& msg) {
 	if (busy == false && (msg->data == "inspection started" or msg->data == "started")) {
 	    busy = true;
 	    std_msgs::Int8 out;
-	    out.data = 1;
+	    out.data = 0;
 	    pubState.publish(out);
 	}
 	else if (busy == true && (msg->data == "inspection completed" or msg->data == "completed")) {
 	    busy = false;
 	    std_msgs::Int8 out;
-	    out.data = 0;
+	    out.data = 1;
 	    pubState.publish(out);
 	}
 }

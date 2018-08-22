@@ -34,7 +34,7 @@
         <param name="rosbag_record_args"
                value="--output-prefix=sawyer
 					/sawyer_woz_action
-					/audio/audio
+					/human_action
 					/sawyer_msgs
 				"/>
         <param name="bag_path" value="$(arg bag_path)"/>
