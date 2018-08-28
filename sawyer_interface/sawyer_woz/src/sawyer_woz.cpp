@@ -25,9 +25,11 @@ SawyerWoZInterface::SawyerWoZInterface(QWidget *parent) : QWidget(parent), ui(ne
 
     //sets count to 0 so program can go through ros::spinOnce 10 times to solve issue with seg fault
     count = 0;
-    longTimeout = 4;
-    shortTimeout = 2;
-    itemLimit = 3;
+    longTimeout = 2;
+    shortTimeout = 1;
+    itemLimit = 6;
+    humanReady = true;
+    recording = false;
 
     //advertises state status
     pub_sawyer_woz_msgs = n.advertise<std_msgs::Int8>("/sawyer_woz_action", 100);
@@ -43,6 +45,8 @@ SawyerWoZInterface::SawyerWoZInterface(QWidget *parent) : QWidget(parent), ui(ne
 
     // subscriber to get external actions executed
     sub_action_msgs = n.subscribe("tcg_msgs", 1, &SawyerWoZInterface::actionCallback, this);
+
+    sub_human_msgs = n.subscribe("human_action", 1, &SawyerWoZInterface::humanCallback, this);
 }
 
 /* Destructor: Frees space in memory where ui was allocated */
@@ -53,8 +57,10 @@ SawyerWoZInterface::~SawyerWoZInterface() {
 /* Updates response countdown if necessary */
 void SawyerWoZInterface::on_countDown_overflow() {
     int time = ui->countDown->intValue() - 1;
-    if (time >= 0) {
+    if (time >= 1) {
         ui->countDown->display(time);
+    } else if (time == 0 && humanReady == false) {
+        ui->countDown->display(-1);
     }
 }
 
@@ -98,19 +104,19 @@ void SawyerWoZInterface::on_pickItem_clicked() {
 
 void SawyerWoZInterface::on_placeDQA_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 4;
+    msg.data = 7;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
 void SawyerWoZInterface::on_placeSQA_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 5;
+    msg.data = 8;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
 void SawyerWoZInterface::on_placeBox_clicked() {
     std_msgs::Int8 msg;
-    msg.data = 6;
+    msg.data = 9;
     pub_sawyer_woz_msgs.publish(msg);
 }
 
@@ -124,8 +130,14 @@ void SawyerWoZInterface::UpdateImage() {
 }
 
 void SawyerWoZInterface::controlCallback(const std_msgs::Int8& msg) {
+    ui->countDown->display(longTimeout);
+}
+
+void SawyerWoZInterface::humanCallback(const std_msgs::Int8& msg) {
     if (msg.data == 0) {
-        ui->countDown->display(longTimeout);
+        humanReady = false;
+    } else {
+        humanReady = true;
     }
 }
 
@@ -138,6 +150,6 @@ void SawyerWoZInterface::on_moveToStart_clicked() {
 
 void SawyerWoZInterface::on_run_clicked() {
     ui->itemLimit->display(itemLimit);
-    std_msgs::Int8 msg = std_msgs::Int8();
+    std_msgs::Bool msg = std_msgs::Bool();
     pub_run.publish(msg);
 }

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    @media only screen and (max-width:800px) {
+      /* For tablets: */
+      .main {
+        width: 80%;
+        padding: 0;
+      }
+      .right {
+        width: 100%;
+      }
+    }
+
+    @media only screen and (max-width:500px) {
+      /* For mobile phones: */
+      .menu, .main, .right {
+        width: 100%;
+      }
+    }
+    </style>
+
+    <title>QA Interface</title>
+
+    <script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+
+    <script type="text/javascript" runat="server">
+      // Connecting to ROS
+      var ros = new ROSLIB.Ros({
+        url : 'ws://192.168.1.6:9090'
+      });
+
+      ros.on('connection', function() {
+        console.log('Connected to websocket server.');
+      });
+
+      ros.on('error', function(error) {
+        console.log('Error connecting to websocket server: ', error);
+      });
+
+      ros.on('close', function() {
+        console.log('Connection to websocket server closed.');
+      });
+
+      var actionPub = new ROSLIB.Topic({
+              ros: ros,
+              name: '/human_action',
+              messageType: 'std_msgs/Int8'
+          });
+
+      function start_inspection() {
+          var msg = new ROSLIB.Message({
+              data: 0
+          });
+          actionPub.publish(msg);
+          document.getElementById("input_f").style.display="block";
+          document.getElementById("start_b").style.display="none";
+      }
+
+      function finish_inspection() {
+          var msg = new ROSLIB.Message({
+              data: 1
+          });
+          actionPub.publish(msg);
+          document.getElementById("item_id").value="";
+          document.getElementById("start_b").style.display="block";
+          document.getElementById("input_f").style.display="none";
+      }
+    </script>
+
+</head>
+<body style="width: 225px">
+    <h1>QA Interface</h1>
+    <button id="start_b" onclick="start_inspection()">Start Inspection</button>
+    <div id="input_f" style="display: none">
+        <p>Please enter the item code and select the inspection type.</p>
+        <p>
+            <label>
+                Item Code:
+                <input id="item_id">
+            </label>
+        </p>
+        <p>
+            Inspection Type:<br>
+            <label>
+                Detailed
+                <input type="radio" name="type">
+            </label>
+            <label>
+                Superficial
+                <input type="radio" name="type">
+            </label>
+        </p>
+        <p>
+            <button onclick="finish_inspection()">Complete Inspection</button>
+        </p>
+    </div>
+</body>
+</html>

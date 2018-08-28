@@ -36,6 +36,8 @@ public:
 
     void controlCallback(const std_msgs::Int8 &msg);
 
+    void humanCallback(const std_msgs::Int8 &msg);
+
     void actionCallback(const std_msgs::Int8 &msg);
 
     void UpdateImage();
@@ -72,12 +74,13 @@ private:
     ros::NodeHandle n;
     ros::Publisher pub_sawyer_woz_msgs, pub_run;
     ros::ServiceClient client_record_start, client_record_stop;
-    ros::Subscriber sub_sawyer_msgs, sub_action_msgs;
+    ros::Subscriber sub_sawyer_msgs, sub_action_msgs, sub_human_msgs;
     int count;
     int longTimeout;
     int shortTimeout;
     int itemLimit;
-    bool recording = false;
+    bool humanReady;
+    bool recording;
     tf::TransformListener listener;
 
 };
