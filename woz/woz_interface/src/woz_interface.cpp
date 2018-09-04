@@ -34,6 +34,9 @@ WoZInterface::WoZInterface(QWidget *parent) : QWidget(parent), ui(new Ui::WoZInt
     shortTimeout = 4;
     promptLimit = 5;
 
+    stop_recognizer = n.serviceClient<std_srvs::Empty>("/stop_recognition", 100);
+    start_recognizer = n.serviceClient<std_srvs::Empty>("/start_recognition", 100);
+
     //advertises state status
     pub_woz_msgs = n.advertise<woz_msgs::control_states>("/woz_msgs", 100);
     pub_label_msgs = n.advertise<woz_msgs::action_label>("/action_started", 100);
@@ -224,6 +227,7 @@ void WoZInterface::on_stopRecording_clicked() {
 
 /* Nao delivers a discriminative stimulus while pointing at the object */
 void WoZInterface::on_discStimulus_clicked() {
+    std_srvs::Empty srv;
     std_msgs::String words;
     ui->promptLimit->display(ui->promptLimit->intValue() - 1);
     ui->countDown->display(timeout);
@@ -231,13 +235,16 @@ void WoZInterface::on_discStimulus_clicked() {
     words.data = "\\RSPD=70\\" + name + ", what is this?";
     controlstate.startPointing = true;
     pub_speak.publish(words);
+    stop_recognizer.call(srv);
     loopRate(15);
     pub_woz_msgs.publish(controlstate);
     publishActionLabel("sd");
+	start_recognizer.call(srv);
 }
 
 /* Nao delivers a prompt while pointing at the object */
 void WoZInterface::on_prompt_clicked() {
+    std_srvs::Empty srv;
     int pause = 0;
     std_msgs::String words;
     std::string obj;
@@ -263,10 +270,12 @@ void WoZInterface::on_prompt_clicked() {
             break;
     }
     controlstate.startPointing2 = true;
+    stop_recognizer.call(srv);
     pub_speak.publish(words);
     loopRate(pause);
     pub_woz_msgs.publish(controlstate);
     publishActionLabel("prompt");
+	start_recognizer.call(srv);
 }
 
 /* Nao delivers a correcting prompt, while pointing at the object  */
@@ -284,6 +293,7 @@ void WoZInterface::on_prompt_clicked() {
 
 /* Rewards patient  */
 void WoZInterface::on_reward_clicked() {
+    std_srvs::Empty srv;
     std_msgs::String words;
     ui->promptLimit->display(promptLimit);
     ui->countDown->display(0);
@@ -291,21 +301,26 @@ void WoZInterface::on_reward_clicked() {
     std::string obj = ui->objectName->toPlainText().toStdString();
     words.data = "\\RSPD=70\\You are right " + name + "! Great job!";
     controlstate.startPointing3 = true;
+    stop_recognizer.call(srv);
     pub_speak.publish(words);
     pub_woz_msgs.publish(controlstate);
     publishActionLabel("reward");
+	start_recognizer.call(srv);
 }
 
 /* Ends a failed session */
 void WoZInterface::on_failure_clicked() {
+    std_srvs::Empty srv;
     std_msgs::String words;
     ui->promptLimit->display(promptLimit);
     ui->countDown->display(0);
     name = ui->subjectName->toPlainText().toStdString();
     std::string obj = ui->objectName->toPlainText().toStdString();
     words.data = "\\RSPD=70\\This is " + obj + ". We will try again next time!";
+    stop_recognizer.call(srv);
     pub_speak.publish(words);
     publishActionLabel("failure");
+	start_recognizer.call(srv);
 }
 
 /* Shuts down ROS and program */

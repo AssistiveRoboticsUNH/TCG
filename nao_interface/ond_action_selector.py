@@ -3,6 +3,7 @@
 import os
 import rospy
 import tensorflow as tf
+from nao_msgs.msg import WordRecognized
 from std_msgs.msg import Int8
 from audio_common_msgs.msg import AudioData
 from model.perception.constants import *
@@ -18,8 +19,16 @@ ALPHA = 1e-5
 WINDOW_SIZE = 15
 WINDOW_STRIDE = 5
 
+word = ""
+
+
+def word_callback(msg):
+    global word
+    word = msg.words[0]
+
 
 def process_input(msg):
+    global word
     ond_states = {'command': 0, 'prompt': 1, 'reward': 2, 'abort': 3}
 
     pub = rospy.Publisher("/action_msgs", Int8, queue_size=1)
@@ -35,6 +44,8 @@ def process_input(msg):
     cnn_ckpt = "../model/perception/aud_classifier/aud_cnn_final/model.ckpt"
     cnn = AudioCNNClassifier(learning_rate=ALPHA, filename=cnn_ckpt)
 
+    rospy.Subscriber('/word_recognized', WordRecognized, word_callback)
+
     aud_coord = tf.train.Coordinator()
 
     # initialize variables
@@ -47,6 +58,7 @@ def process_input(msg):
     print("CNN Packager ready")
 
     state = 'command'
+    word = ''
     window_counter = 0
     tcg.initialize_policy_selector(state, 'abort')
     pub.publish(ond_states[state])
@@ -59,7 +71,13 @@ def process_input(msg):
             window_counter += 1
             # print('{}  {}  {}  {}'.format(window_counter, start_frame, end_frame, input_length))
             window_data = packager.format_kinect_range(start_frame, end_frame)
-            obs = CLASSES_A[cnn.classify_input_ros(WINDOW_SIZE, window_data)]
+            obs_o = CLASSES_A[cnn.classify_input_ros(WINDOW_SIZE, window_data)]
+            if obs_o != 'none' and word == 'basketball':
+                obs = 'correct'
+            elif word == '' or obs_o == 'none':
+                obs = 'none'
+            else:
+                obs = 'incorrect'
             tcg.process_observation(obs, end_frame / 28.0)
             new_state = tcg.evaluate_timeout(end_frame / 28.0)
             # new_state = None
@@ -68,9 +86,11 @@ def process_input(msg):
             if new_state is not None:
                 state = new_state
                 pub.publish(ond_states[new_state])
-                print('{}.{}   w:{} o:{}  s:{}'.format(t.secs, t.nsecs, window_counter, obs, state))
+                print('{}.{}   w:{} o:{}-{}-{}  s:{}'.format(t.secs, t.nsecs, window_counter,
+                                                          obs, obs_o, word, state))
             else:
-                print('{}.{}   w:{} o:{}'.format(t.secs, t.nsecs, window_counter, obs))
+                print('{}.{}   w:{} o:{}-{}-{}'.format(t.secs, t.nsecs, window_counter, obs, obs_o, word))
+            word = ''
     print('Session completed.')
 
 

@@ -111,7 +111,8 @@ private:
     ros::Publisher pub_speak, pub_pose, pub_woz_msgs,
             pub_move, pub_run, pub_label_msgs, pub_start_session;
     ros::ServiceClient client_stiff, client_record_start, client_record_stop,
-            client_wakeup, life_enable, life_disable, client_rest;
+            client_wakeup, life_enable, life_disable, client_rest,
+            start_recognizer, stop_recognizer;
     ros::Subscriber sub_woz_msgs, sub_tcam, sub_bcam, sub_action_msgs;
     QImage NaoTopImg;
     QImage NaoBottomImg;
